@@ -72,27 +72,27 @@
 
             <div class="settlement-divider"></div>
 
-            <div class="card-header">
-                <h2>🏁 4. 智慧拆帳結算</h2>
-            </div>
+           <div class="card-header">
+    <h2>🏁 4. 智慧拆帳結算</h2>
+</div>
 
-            <div class="tab-container">
-                <button class="tab-btn active" id="tab-total" onclick="switchSettlementTab('total')">📊 總帳結算總覽</button>
-                <button class="tab-btn" id="tab-single" onclick="switchSettlementTab('single')">🛍️ 分筆單獨拆帳</button>
-            </div>
-            
-            <div id="single-select-box" class="form-group id-hidden" style="margin-top: 10px;">
-                <label for="single-expense-select">選擇要查看的品項：</label>
-                <select id="single-expense-select" onchange="renderSettlementUI()"></select>
-            </div>
+<div class="tab-container">
+    <button class="tab-btn active" id="tab-total" onclick="switchSettlementTab('total')">📊 總帳結算總覽</button>
+    <button class="tab-btn" id="tab-single" onclick="switchSettlementTab('single')">🛍️ 分筆單獨拆帳</button>
+</div>
 
-            <div class="settlement-box">
-                <h3 id="settlement-title">📊 每人收支總覽 (總累積)</h3>
-                <ul id="balance-list" class="balance-list"></ul>
-                
-                <h3>💸 最佳轉帳指引</h3>
-                <ul id="transfer-list" class="transfer-list"></ul>
-            </div>
+<div id="single-select-box" class="form-group id-hidden" style="margin-top: 10px;">
+    <label for="single-expense-select">選擇要查看的品項：</label>
+    <select id="single-expense-select" onchange="renderSettlementUI()"></select>
+</div>
+
+<div class="settlement-box">
+    <h3 id="settlement-title">📊 每人收支總覽 (總累積)</h3>
+    <ul id="balance-list" class="balance-list"></ul>
+    
+    <h3>💸 最佳轉帳指引</h3>
+    <ul id="transfer-list" class="transfer-list"></ul>
+</div>
         </section>
     </div>
 
