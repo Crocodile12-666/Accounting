@@ -18,7 +18,7 @@
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    -webkit-tap-highlight-color: transparent; /* 移除手機點擊藍色高亮 */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -33,7 +33,7 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 480px; /* 黃金手機網頁寬度 */
+    max-width: 480px;
 }
 
 .app-header {
@@ -110,18 +110,14 @@ input:focus, select:focus {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
-/* 預算試算區塊外觀 */
 .budget-box {
     background: var(--primary-light);
     padding: 14px;
     border-radius: 10px;
     margin-bottom: 16px;
 }
-.budget-box label {
-    color: #1e40af;
-}
+.budget-box label { color: #1e40af; }
 
-/* --- 成員與付款人列表容器 --- */
 .member-list-container, .payers-list {
     display: flex;
     flex-direction: column;
@@ -129,10 +125,9 @@ input:focus, select:focus {
     margin-bottom: 12px;
 }
 
-/* --- 核心修正：改用 CSS Grid 強制精準配寬，絕不壓縮 --- */
+/* 用 Grid 強制劃分防擠壓 */
 .member-row {
     display: grid;
-    /* 欄位分配：名字(彈性) | 比例框(65px) | 金額試算(60px) | 刪除鈕(38px) */
     grid-template-columns: 1fr 65px 60px 38px;
     align-items: center;
     gap: 6px;
@@ -144,7 +139,6 @@ input:focus, select:focus {
 
 .payer-row {
     display: grid;
-    /* 欄位分配：下拉選單(彈性) | 金額輸入框(100px) | 刪除鈕(38px) */
     grid-template-columns: 1fr 100px 38px;
     align-items: center;
     gap: 6px;
@@ -154,63 +148,43 @@ input:focus, select:focus {
     border: 1px solid var(--border);
 }
 
-/* --- 輸入框與元件細節微調 --- */
-
-/* 名字輸入框與下拉選單 */
-.member-row input[type="text"],
-.payer-row select {
+.member-row input[type="text"], .payer-row select {
     width: 100%;
     background: #fff;
     padding: 10px 8px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.95rem;
 }
 
-/* 比例外層包裹（移除原本的 flex，只留文字對齊） */
 .member-row .weight-input-wrapper {
     display: flex;
     align-items: center;
     gap: 2px;
     font-size: 0.85rem;
     font-weight: bold;
-    color: var(--text-main);
 }
-
-/* 比例輸入框本身：強制固定寬度，縮減內邊距，打滿空間 */
 .member-row .weight-input-wrapper input {
-    width: 42px; /* 固定寬度，確保塞得下 2~3 位數 */
-    padding: 10px 2px; /* 極小化左右內邊距，讓數字絕對看得見 */
+    width: 42px;
+    padding: 10px 2px;
     text-align: center;
     background: #fff;
     border: 1px solid var(--border);
     border-radius: 8px;
-    font-size: 0.95rem;
 }
 
-/* 付款金額輸入框（第二區塊） */
 .payer-row input[type="number"] {
     width: 100%;
     padding: 10px 8px;
     background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.95rem;
     text-align: center;
 }
 
-/* 藍色即時試算文字：固定寬度，靠右對齊 */
 .live-calc-text {
     font-size: 0.85rem;
     color: var(--primary);
     font-weight: 700;
     text-align: right;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* 萬一金額爆大，自動變省略號不撐壞排版 */
 }
 
-/* 按鈕美化 */
 .btn {
     width: 100%;
     padding: 14px;
@@ -225,7 +199,6 @@ input:focus, select:focus {
     align-items: center;
 }
 .btn:active { transform: scale(0.98); }
-
 .btn-primary { background: var(--primary); color: white; }
 .btn-success { background: var(--success); color: white; margin-top: 5px; }
 .btn-secondary { background: #4b5563; color: white; }
@@ -235,45 +208,9 @@ input:focus, select:focus {
     gap: 8px;
     margin-bottom: 10px;
 }
-.btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    padding: 10px;
-    font-size: 0.9rem;
-}
-.btn-ghost {
-    background: transparent;
-    color: var(--danger);
-    padding: 10px;
-    font-size: 0.9rem;
-}
-
-/* 刪除按鈕：改成正方形，視覺更簡潔 */
-.btn-sm-del {
-    width: 38px;
-    height: 38px;
-    background: #fee2e2;
-    color: var(--danger);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-}
-
-/* 付款人列表 */
-.payers-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-.payer-row select { flex: 1.5; background: #fff; }
-.payer-row input { flex: 1.2; background: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 10px; font-size: 0.9rem;}
+.btn-ghost { background: transparent; color: var(--danger); padding: 10px; font-size: 0.9rem;}
+.btn-sm-del { width: 38px; height: 38px; background: #fee2e2; color: var(--danger); border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center;}
 
 .btn-add-payer {
     background: transparent;
@@ -283,21 +220,13 @@ input:focus, select:focus {
     width: 100%;
     border-radius: 8px;
     font-weight: 600;
-    font-size: 0.85rem;
     cursor: pointer;
     margin-bottom: 10px;
 }
 
-.total-calc {
-    text-align: right;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #111827;
-    padding-top: 5px;
-}
+.total-calc { text-align: right; font-size: 0.95rem; font-weight: 700; }
 .total-calc span { color: var(--success); font-size: 1.1rem; }
 
-/* 膠囊型複選框 */
 .checkbox-group {
     display: flex;
     flex-wrap: wrap;
@@ -306,7 +235,6 @@ input:focus, select:focus {
     padding: 10px;
     border-radius: 10px;
 }
-
 .checkbox-label {
     display: flex;
     align-items: center;
@@ -318,109 +246,73 @@ input:focus, select:focus {
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    user-select: none;
-}
-.checkbox-label input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
 }
 
-/* 手機版卡片式明細 (取代爆掉的表格) */
-.expense-cards-list {
+/* 切換分頁（Tab）樣式 */
+.tab-container {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.expense-item-card {
-    background: #f9fafb;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    position: relative;
-}
-
-.card-main-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: #e5e7eb;
+    padding: 4px;
+    border-radius: 10px;
     margin-bottom: 10px;
 }
-
-.card-title {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #111827;
-}
-
-.card-amount {
-    font-weight: 800;
-    color: var(--primary);
-    font-size: 1.05rem;
-}
-
-.card-sub-details {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-}
-
-.card-delete-btn {
-    position: absolute;
-    right: 14px;
-    bottom: 12px;
-    background: #fee2e2;
-    color: var(--danger);
+.tab-btn {
+    flex: 1;
+    padding: 10px;
     border: none;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    background: transparent;
     font-weight: 600;
-    cursor: pointer;
-}
-
-.settlement-divider {
-    margin: 25px 0;
-    border-top: 2px dashed var(--border);
-}
-
-/* 結算區塊外觀 */
-.settlement-box {
-    background: #f9fafb;
-    padding: 14px;
-    border-radius: 12px;
-    margin-top: 14px;
-    border: 1px solid var(--border);
-}
-
-.balance-list li {
-    padding: 8px 0;
     font-size: 0.9rem;
-    border-bottom: 1px dashed var(--border);
-    display: flex;
-    justify-content: space-between;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+.tab-btn.active {
+    background: #fff;
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
-.transfer-list {
-    margin-top: 5px;
+/* 歷史卡片優化 */
+.expense-cards-list { display: flex; flex-direction: column; gap: 12px; }
+.expense-item-card { background: #f9fafb; border: 1px solid var(--border); border-radius: 12px; padding: 14px; position: relative; }
+.card-main-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.card-title { font-weight: 700; font-size: 1rem; }
+.card-amount { font-weight: 800; color: var(--primary); font-size: 1.05rem; }
+.card-sub-details { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+
+/* 還款備忘追蹤區 */
+.repay-tracker-box {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
 }
-.transfer-list li {
+.repay-title { font-size: 0.78rem; font-weight: 700; color: #4b5563; margin-bottom: 4px; }
+.repay-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.repay-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+.repay-chip.done {
     background: var(--success-light);
     color: #065f46;
-    padding: 10px 12px;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    border-bottom: none;
-    border-left: 4px solid var(--success);
+    border-color: #a7f3d0;
 }
 
-.status-msg {
-    margin-top: 10px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-align: center;
-}
-
+.card-delete-btn { position: absolute; right: 14px; top: 12px; background: #fee2e2; color: var(--danger); border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+.settlement-divider { margin: 25px 0; border-top: 2px dashed var(--border); }
+.settlement-box { background: #f9fafb; padding: 14px; border-radius: 12px; margin-top: 14px; border: 1px solid var(--border); }
+.balance-list li { padding: 10px 0; font-size: 0.9rem; border-bottom: 1px dashed var(--border); }
+.transfer-list { margin-top: 5px; }
+.transfer-list li { background: var(--success-light); color: #065f46; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 0.88rem; font-weight: 600; border-left: 4px solid var(--success); }
+.status-msg { margin-top: 10px; font-size: 0.85rem; font-weight: 600; text-align: center; }
 .id-hidden { display: none !important; }
