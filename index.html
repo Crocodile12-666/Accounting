@@ -41,7 +41,7 @@
             <form id="expense-form" onsubmit="addExpense(event)">
                 <div class="form-group">
                     <label for="exp-item">🛍️ 消費品項</label>
-                    <input type="text" id="exp-item" placeholder="例如：影印資料、買材料、聚餐" required>
+                    <input type="text" id="exp-item" placeholder="例如：ChatGPT Plus、Jojo黏土人" required>
                 </div>
 
                 <div class="form-group">
@@ -64,7 +64,7 @@
 
         <section class="card id-hidden" id="result-section">
             <div class="card-header">
-                <h2>📜 3. 歷史帳目明細</h2>
+                <h2>📜 3. 歷史帳目明細與還款進度</h2>
             </div>
             
             <div id="expense-cards-container" class="expense-cards-list">
@@ -75,10 +75,19 @@
             <div class="card-header">
                 <h2>🏁 4. 智慧拆帳結算</h2>
             </div>
-            <button type="button" class="btn btn-secondary" onclick="calculateSettlement()">🔄 重新計算最佳轉帳方案</button>
+
+            <div class="tab-container">
+                <button class="tab-btn active" id="tab-total" onclick="switchSettlementTab('total')">📊 總帳結算總覽</button>
+                <button class="tab-btn" id="tab-single" onclick="switchSettlementTab('single')">🛍️ 分筆單獨拆帳</button>
+            </div>
             
+            <div id="single-select-box" class="form-group id-hidden" style="margin-top: 10px;">
+                <label for="single-expense-select">選擇要查看的品項：</label>
+                <select id="single-expense-select" onchange="renderSettlementUI()"></select>
+            </div>
+
             <div class="settlement-box">
-                <h3>📊 每人收支總覽 (已墊 - 應付)</h3>
+                <h3 id="settlement-title">📊 每人收支總覽 (總累積)</h3>
                 <ul id="balance-list" class="balance-list"></ul>
                 
                 <h3>💸 最佳轉帳指引</h3>
