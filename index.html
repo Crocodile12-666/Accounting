@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小組智慧分帳系統</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>📊 小組智慧分帳</h1>
+            <p class="subtitle">隨時記帳 · 智慧拆帳 · 自動存檔</p>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>👥 1. 權重與款項設定</h2>
+            </div>
+            
+            <div class="budget-box">
+                <label for="total-budget">💰 預估/目前總金額 (選填)</label>
+                <input type="number" id="total-budget" placeholder="輸入總額自動依比例試算" oninput="liveCalculateBudget()">
+            </div>
+
+            <div id="member-list" class="member-list-container">
+                </div>
+            
+            <div class="btn-group-row">
+                <button type="button" class="btn btn-outline" onclick="addMemberInput()">➕ 新增成員</button>
+                <button type="button" class="btn btn-ghost" onclick="clearAllData()">🗑️ 清空重來</button>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="saveMembers()">💾 儲存並鎖定比例</button>
+            <p id="weight-status" class="status-msg"></p>
+        </section>
+
+        <section class="card id-hidden" id="expense-section">
+            <div class="card-header">
+                <h2>💸 2. 新增隨時消費</h2>
+            </div>
+            <form id="expense-form" onsubmit="addExpense(event)">
+                <div class="form-group">
+                    <label for="exp-item">🛍️ 消費品項</label>
+                    <input type="text" id="exp-item" placeholder="例如：影印資料、買材料、聚餐" required>
+                </div>
+
+                <div class="form-group">
+                    <label>💳 誰負責付款？ (可多人代墊)</label>
+                    <div id="payers-container" class="payers-list">
+                        </div>
+                    <button type="button" class="btn-add-payer" onclick="addPayerRow()">＋ 增加付款人</button>
+                    <div class="total-calc">付款總計：<span id="calculated-total">0</span> 元</div>
+                </div>
+
+                <div class="form-group">
+                    <label>🎯 誰要分攤這筆錢？</label>
+                    <div id="consumers-container" class="checkbox-group">
+                        </div>
+                </div>
+
+                <button type="submit" class="btn btn-success">✨ 新增這筆帳目</button>
+            </form>
+        </section>
+
+        <section class="card id-hidden" id="result-section">
+            <div class="card-header">
+                <h2>📜 3. 歷史帳目明細</h2>
+            </div>
+            
+            <div id="expense-cards-container" class="expense-cards-list">
+                </div>
+
+            <div class="settlement-divider"></div>
+
+            <div class="card-header">
+                <h2>🏁 4. 智慧拆帳結算</h2>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="calculateSettlement()">🔄 重新計算最佳轉帳方案</button>
+            
+            <div class="settlement-box">
+                <h3>📊 每人收支總覽 (已墊 - 應付)</h3>
+                <ul id="balance-list" class="balance-list"></ul>
+                
+                <h3>💸 最佳轉帳指引</h3>
+                <ul id="transfer-list" class="transfer-list"></ul>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
