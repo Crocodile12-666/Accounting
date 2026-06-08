@@ -121,61 +121,93 @@ input:focus, select:focus {
     color: #1e40af;
 }
 
-/* 成員輸入列優化 */
-/* --- 成員輸入列優化與手機防壓縮修正 --- */
-.member-list-container {
+/* --- 成員與付款人列表容器 --- */
+.member-list-container, .payers-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-bottom: 12px;
 }
 
-.member-row, .payer-row {
-    display: flex;
-    gap: 6px; /* 微調間距，讓手機版有更多空間 */
+/* --- 核心修正：改用 CSS Grid 強制精準配寬，絕不壓縮 --- */
+.member-row {
+    display: grid;
+    /* 欄位分配：名字(彈性) | 比例框(65px) | 金額試算(60px) | 刪除鈕(38px) */
+    grid-template-columns: 1fr 65px 60px 38px;
     align-items: center;
+    gap: 6px;
     background: #f9fafb;
     padding: 8px;
     border-radius: 10px;
     border: 1px solid var(--border);
 }
 
-/* 名字輸入框 */
-.member-row input[type="text"] {
-    flex: 2;
-    min-width: 0; /* 關鍵：防止 Flex 子元素撐爆或無法縮小 */
-    background: #fff;
-    padding: 10px 8px; /* 稍微縮小內邊距 */
+.payer-row {
+    display: grid;
+    /* 欄位分配：下拉選單(彈性) | 金額輸入框(100px) | 刪除鈕(38px) */
+    grid-template-columns: 1fr 100px 38px;
+    align-items: center;
+    gap: 6px;
+    background: #f9fafb;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
 }
 
-/* 比例％輸入框的容器 */
+/* --- 輸入框與元件細節微調 --- */
+
+/* 名字輸入框與下拉選單 */
+.member-row input[type="text"],
+.payer-row select {
+    width: 100%;
+    background: #fff;
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+/* 比例外層包裹（移除原本的 flex，只留文字對齊） */
 .member-row .weight-input-wrapper {
-    flex: 1.5; /* 稍微調大比例容器的分配權重 */
     display: flex;
     align-items: center;
     gap: 2px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: bold;
-    min-width: 0;
+    color: var(--text-main);
 }
 
-/* 比例數字輸入框本身（修正顯示不全的元兇） */
+/* 比例輸入框本身：強制固定寬度，縮減內邊距，打滿空間 */
 .member-row .weight-input-wrapper input {
-    background: #fff;
-    padding: 10px 4px; /* 減少左右 padding，留出更多空間給數字 */
+    width: 42px; /* 固定寬度，確保塞得下 2~3 位數 */
+    padding: 10px 2px; /* 極小化左右內邊距，讓數字絕對看得見 */
     text-align: center;
-    width: 100%;       /* 填滿容器 */
-    min-width: 45px;   /* 限制最小寬度，確保能完整塞下 3 個字元 (例如 100) */
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
 }
 
-/* 即時試算文字 */
+/* 付款金額輸入框（第二區塊） */
+.payer-row input[type="number"] {
+    width: 100%;
+    padding: 10px 8px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+/* 藍色即時試算文字：固定寬度，靠右對齊 */
 .live-calc-text {
     font-size: 0.85rem;
     color: var(--primary);
     font-weight: 700;
-    min-width: 55px; /* 稍微縮小寬度，給輸入框更多容納空間 */
     text-align: right;
-    white-space: nowrap; /* 防止金額換行 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 萬一金額爆大，自動變省略號不撐壞排版 */
 }
 
 /* 按鈕美化 */
@@ -217,16 +249,20 @@ input:focus, select:focus {
     font-size: 0.9rem;
 }
 
-/* 刪除按鈕 */
+/* 刪除按鈕：改成正方形，視覺更簡潔 */
 .btn-sm-del {
+    width: 38px;
+    height: 38px;
     background: #fee2e2;
     color: var(--danger);
     border: none;
-    padding: 10px; /* 稍微縮減，按得到即可 */
     border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
-    flex-shrink: 0; /* 防止按鈕被壓縮變形 */
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
 }
 
 /* 付款人列表 */
