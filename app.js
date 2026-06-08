@@ -1,5 +1,6 @@
 let members = [];      
 let expenses = [];     
+let currentTab = "total"; // 紀錄目前分頁狀態："total" 或 "single"
 
 window.onload = function() {
     loadDataFromStorage();
@@ -10,14 +11,11 @@ function loadDataFromStorage() {
     const storedExpenses = localStorage.getItem("group_billing_expenses");
     const storedBudget = localStorage.getItem("group_billing_budget");
 
-    if (storedBudget) {
-        document.getElementById("total-budget").value = storedBudget;
-    }
+    if (storedBudget) document.getElementById("total-budget").value = storedBudget;
 
     if (storedMembers) {
         members = JSON.parse(storedMembers);
         renderSavedMembers(members);
-        
         document.getElementById("weight-status").style.color = "var(--success)";
         document.getElementById("weight-status").innerText = "✨ 已自動還原進度！";
         renderExpenseFormOptions();
@@ -30,15 +28,15 @@ function loadDataFromStorage() {
     if (storedExpenses) {
         expenses = JSON.parse(storedExpenses);
         renderExpenseList();
-        calculateSettlement();
+        updateSingleExpenseSelect();
+        renderSettlementUI();
     }
 }
 
 function saveDataToStorage() {
     localStorage.setItem("group_billing_members", JSON.stringify(members));
     localStorage.setItem("group_billing_expenses", JSON.stringify(expenses));
-    const budgetValue = document.getElementById("total-budget").value;
-    localStorage.setItem("group_billing_budget", budgetValue);
+    localStorage.setItem("group_billing_budget", document.getElementById("total-budget").value);
 }
 
 function clearAllData() {
@@ -52,7 +50,8 @@ function clearAllData() {
         document.getElementById("result-section").classList.add("id-hidden");
         document.getElementById("weight-status").innerText = "🧹 資料已全部清空。";
         renderExpenseList();
-        calculateSettlement();
+        updateSingleExpenseSelect();
+        renderSettlementUI();
     }
 }
 
@@ -104,7 +103,6 @@ function liveCalculateBudget() {
         const name = nameInputs[i].value.trim() || `成員${i+1}`;
         const weight = parseFloat(weightInputs[i].value) || 0;
         const personalShare = totalBudget * (weight / 100);
-        
         calcTexts[i].id = `live-calc-${name}`;
         calcTexts[i].innerText = `$${personalShare.toFixed(0)}`;
     }
@@ -121,7 +119,6 @@ function saveMembers() {
     for (let i = 0; i < nameInputs.length; i++) {
         const name = nameInputs[i].value.trim();
         const weight = parseFloat(weightInputs[i].value) || 0;
-        
         if (!name) {
             statusMsg.style.color = "var(--danger)";
             statusMsg.innerText = "❌ 請填寫所有成員的名字！";
@@ -143,6 +140,7 @@ function saveMembers() {
     
     renderExpenseFormOptions();
     saveDataToStorage();
+    renderSettlementUI();
     
     document.getElementById("expense-section").classList.remove("id-hidden");
     document.getElementById("result-section").classList.remove("id-hidden");
@@ -168,11 +166,7 @@ function renderExpenseFormOptions() {
 function addPayerRow() {
     const container = document.getElementById("payers-container");
     let optionsHtml = members.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
-    
-    // 💡 新增優化：自動讀取上方區塊設定的「預估/目前總金額」
     const topBudget = document.getElementById("total-budget").value || "";
-    
-    // 檢查如果目前是第一列付款人，就自動把上方的總金額帶進去，省去手動輸入
     const currentRows = container.querySelectorAll(".payer-row").length;
     const defaultAmount = (currentRows === 0) ? topBudget : "";
 
@@ -184,8 +178,6 @@ function addPayerRow() {
         <button type="button" class="btn-sm-del" onclick="removePayerRow(this)">❌</button>
     `;
     container.appendChild(row);
-    
-    // 剛加完列，同步更新下方的「付款總計」
     updateTotalPayAmount();
 }
 
@@ -236,12 +228,17 @@ function addExpense(e) {
         return;
     }
     
+    // 初始化這筆帳的個別還款狀態（預設皆為未還款 false）
+    let paidStatus = {};
+    consumers.forEach(name => { paidStatus[name] = false; });
+    
     const newExpense = {
         id: Date.now(),
         item: item,
         totalAmount: totalAmount,
         payers: payers,
-        consumers: consumers
+        consumers: consumers,
+        paidStatus: paidStatus // 新增狀態記錄
     };
     
     expenses.push(newExpense);
@@ -251,11 +248,12 @@ function addExpense(e) {
     document.getElementById("calculated-total").innerText = "0";
     
     renderExpenseList();
-    calculateSettlement();
+    updateSingleExpenseSelect();
+    renderSettlementUI();
     saveDataToStorage();
 }
 
-// 核心改動：改為手機版卡片渲染結構
+// 渲染歷史明細（整合還款打勾功能）
 function renderExpenseList() {
     const container = document.getElementById("expense-cards-container");
     container.innerHTML = "";
@@ -265,9 +263,22 @@ function renderExpenseList() {
         return;
     }
 
-    expenses.forEach((exp, index) => {
+    expenses.forEach((exp, expIdx) => {
         const payersStr = exp.payers.map(p => `${p.name} 墊 ${p.amount}元`).join("、");
         const consumersStr = exp.consumers.join(", ");
+        
+        // 產生成員還款狀態的膠囊晶片 HTML
+        let repayChipsHtml = "";
+        exp.consumers.forEach(name => {
+            // 如果這個人本來就是付款人且金額足夠，可以預設或手動勾選
+            const isDone = exp.paidStatus[name] ? "done" : "";
+            const icon = exp.paidStatus[name] ? "✅" : "⬜";
+            repayChipsHtml += `
+                <div class="repay-chip ${isDone}" onclick="toggleRepayStatus(${expIdx}, '${name}')">
+                    <span>${icon}</span> ${name}
+                </div>
+            `;
+        });
         
         container.innerHTML += `
             <div class="expense-item-card">
@@ -279,49 +290,104 @@ function renderExpenseList() {
                     <div>💳 付款：${payersStr}</div>
                     <div>🎯 分攤：${consumersStr}</div>
                 </div>
-                <button type="button" class="card-delete-btn" onclick="deleteExpense(${index})">刪除</button>
+                
+                <div class="repay-tracker-box">
+                    <div class="repay-title">🔔 還款收款狀態 (點擊可切換已付/未付)：</div>
+                    <div class="repay-badges">${repayChipsHtml}</div>
+                </div>
+
+                <button type="button" class="card-delete-btn" onclick="deleteExpense(${expIdx})">刪除</button>
             </div>
         `;
     });
 }
 
-function deleteExpense(index) {
-    expenses.splice(index, 1);
+// 切換特定消費項目中某人的還款狀態
+function toggleRepayStatus(expIdx, name) {
+    expenses[expIdx].paidStatus[name] = !expenses[expIdx].paidStatus[name];
     renderExpenseList();
-    calculateSettlement();
     saveDataToStorage();
 }
 
-// 核心演算法與畫面渲染：計算智慧拆帳結算
-function calculateSettlement() {
-    let balances = {};       // 儲存每人最終收支 (已墊 - 應付)
-    let totalPaid = {};      // 儲存每人「總共幫忙墊了多少錢」
-    let totalShouldPay = {}; // 儲存每人「依比例總共應該出多少錢」
+// 更新單筆拆帳下拉選單的內容
+function updateSingleExpenseSelect() {
+    const select = document.getElementById("single-expense-select");
+    select.innerHTML = "";
+    if (expenses.length === 0) {
+        select.innerHTML = `<option value="">-- 目前無消費品項 --</option>`;
+        return;
+    }
+    expenses.forEach((exp, idx) => {
+        select.innerHTML += `<option value="${idx}">${exp.item} ($${exp.totalAmount}元)</option>`;
+    });
+}
+
+// 切換總結算與單筆拆帳分頁
+function switchSettlementTab(tabType) {
+    currentTab = tabType;
+    document.getElementById("tab-total").classList.toggle("active", tabType === 'total');
+    document.getElementById("tab-single").classList.toggle("active", tabType === 'single');
     
-    // 初始化所有人數值
+    const selectBox = document.getElementById("single-select-box");
+    if (tabType === 'single') {
+        selectBox.classList.remove("id-hidden");
+        document.getElementById("settlement-title").innerText = "🛍️ 每人收支總覽 (本筆品項)";
+    } else {
+        selectBox.classList.add("id-hidden");
+        document.getElementById("settlement-title").innerText = "📊 每人收支總覽 (總累積帳目)";
+    }
+    renderSettlementUI();
+}
+
+// 統一調度結算畫面渲染
+function renderSettlementUI() {
+    if (currentTab === "total") {
+        calculateSettlement(expenses); // 傳入所有消費進行累積結算
+    } else {
+        const select = document.getElementById("single-expense-select");
+        const idx = parseInt(select.value);
+        if (!isNaN(idx) && expenses[idx]) {
+            calculateSettlement([expenses[idx]]); // 只傳入單一筆進行獨立結算
+        } else {
+            document.getElementById("balance-list").innerHTML = "<li>請先新增消費項目</li>";
+            document.getElementById("transfer-list").innerHTML = "<li>無轉帳指引</li>";
+        }
+    }
+}
+
+function deleteExpense(index) {
+    expenses.splice(index, 1);
+    renderExpenseList();
+    updateSingleExpenseSelect();
+    renderSettlementUI();
+    saveDataToStorage();
+}
+
+// 智慧拆帳核心演算法（支援傳入特定陣列，達成累積或單筆計算）
+function calculateSettlement(targetExpenses) {
+    let balances = {};       
+    let totalPaid = {};      
+    let totalShouldPay = {}; 
+    
     members.forEach(m => { 
         balances[m.name] = 0; 
         totalPaid[m.name] = 0;
         totalShouldPay[m.name] = 0;
     });
     
-    // 1. 逐筆計算消費紀錄，把「已墊」與「應付」加總
-    expenses.forEach(exp => {
-        // 累加付款人的代墊金額
+    targetExpenses.forEach(exp => {
         exp.payers.forEach(p => {
             if (balances[p.name] !== undefined) { 
                 balances[p.name] += p.amount; 
-                totalPaid[p.name] += p.amount; // 記錄總已墊
+                totalPaid[p.name] += p.amount; 
             }
         });
         
-        // 計算這筆消費中，參與分攤人的權重總和
         let activeWeightSum = 0;
         members.forEach(m => {
             if (exp.consumers.includes(m.name)) { activeWeightSum += m.weight; }
         });
         
-        // 依據參與者權重比例，累加個人的應付金額
         members.forEach(m => {
             if (exp.consumers.includes(m.name)) {
                 let share = 0;
@@ -331,12 +397,12 @@ function calculateSettlement() {
                     share = exp.totalAmount / exp.consumers.length;
                 }
                 balances[m.name] -= share;
-                totalShouldPay[m.name] += share; // 記錄總應付
+                totalShouldPay[m.name] += share; 
             }
         });
     });
     
-    // 2. 渲染【4. 每人收支總覽】（加強版：把已墊、應付、應拿回/補出標註得一清二楚！）
+    // 渲染每人收支
     const balanceUl = document.getElementById("balance-list");
     balanceUl.innerHTML = "";
     for (let name in balances) {
@@ -344,27 +410,25 @@ function calculateSettlement() {
         let paid = totalPaid[name];
         let should = totalShouldPay[name];
         
-        // 判斷最終是要拿回錢還是補錢
         let resultTag = bal >= 0 
             ? `<span style="color:var(--success); font-weight:700; background:var(--success-light); padding:2px 8px; border-radius:6px;">💰 應拿回 +${bal.toFixed(0)} 元</span>` 
             : `<span style="color:var(--danger); font-weight:700; background:#fee2e2; padding:2px 8px; border-radius:6px;">💸 應補出 -${Math.abs(bal).toFixed(0)} 元</span>`;
             
-        // 建立超詳細的個人收支明細 HTML
         balanceUl.innerHTML += `
-            <li style="display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-bottom: 1px dashed var(--border);">
+            <li style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px dashed var(--border);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 1.05rem;">👤 <b>${name}</b></span>
+                    <span style="font-size: 0.95rem;">👤 <b>${name}</b></span>
                     ${resultTag}
                 </div>
-                <div style="display: flex; gap: 12px; font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-                    <span>📥 總共代墊: <b>${paid.toFixed(0)}</b> 元</span>
-                    <span>📤 依比例應付: <b>${should.toFixed(0)}</b> 元</span>
+                <div style="display: flex; gap: 12px; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                    <span>📥 已墊: <b>${paid.toFixed(0)}</b> 元</span>
+                    <span>📤 應付: <b>${should.toFixed(0)}</b> 元</span>
                 </div>
             </li>
         `;
     }
     
-    // 3. 計算並渲染【最佳轉帳指引】
+    // 計算最優轉帳方案
     const transferUl = document.getElementById("transfer-list");
     transferUl.innerHTML = "";
     
@@ -386,7 +450,7 @@ function calculateSettlement() {
         let transferAmount = Math.min(creditor.amount, debtor.amount);
         
         if (transferAmount > 0.1) {
-            transferUl.innerHTML += `<li>💸 <b>${debtor.name}</b> ➡️ 轉帳給 <b>${creditor.name}</b>： <span style="font-size:1.05rem; font-weight:800;">${transferAmount.toFixed(0)}</span> 元</li>`;
+            transferUl.innerHTML += `<li>💸 <b>${debtor.name}</b> ➡️ 轉帳給 <b>${creditor.name}</b>： <span style="font-size:1rem; font-weight:800;">${transferAmount.toFixed(0)}</span> 元</li>`;
             hasTransfers = true;
         }
         
